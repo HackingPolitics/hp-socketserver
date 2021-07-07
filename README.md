@@ -15,6 +15,15 @@ Pauline Grahlmann,
 Websocket server providing the realtime collaboration features for the HPO platform.  
 It uses Hocuspocus/Yjs to provide sync functionality for data including WYSIWYG documents & online users.
 
+## Usage
+
+```
+git clone https://github.com/HackingPolitics/hp-socketserver.git
+cd hp-socketserver
+docker build -t hp-websocket .
+docker run -v /path/to/jwt/public.pem:/app/public.pem -e API_URL=https://hp-api.tld hp-websocket
+```
+
 ## Supported by
 
 The project is a finalist of the [PrototypeFund Round 9](https://prototypefund.de/projects/round-9/ 'Prototypefund Website'), see https://prototypefund.de/project/hackingpoliticsonline/ for details.
