@@ -1,18 +1,19 @@
-# hp-socketserver
+# Hacking Politics Websocket
+
 <div style="text-align:center">
-<img src="https://raw.githubusercontent.com/HackingPolitics/hp-frontend/main/hp-teaser.jpg" style="display:block; margin:auto; width:100%; max-width:100%"/>
+<a href="https://zukunftsstadt.de/hacking-politics"><img src="./public/images/logo.png" style="display:block; margin:auto; width:100%; max-width:100%"/></a>
 </div>
 
 By
 [Norbert Rost](https://github.com/norbertrost) ([@Zukunftsstadtde](https://twitter.com/Zukunftsstadtde)),
 [Jakob Schumann](https://github.com/j-schumann),
-[Pauline Grahlmann](https://github.com/pascalknecht),
-[Tina Hoffmann](https://github.com/palmiak),
+Pauline Grahlmann,
+[Tina Hoffmann](https://github.com/ruebi),
 [Philipp Munzert](https://github.com/philmuze) ([@philmuze](https://twitter.com/philmuze)),
 [Frieder Jacobi](https://github.com/f-jacobi)
 
-Socket.io server for the project teams
-
+Websocket server providing the realtime collaboration features for the HPO platform.  
+It uses Hocuspocus/Yjs to provide sync functionality for data including WYSIWYG documents & online users.
 
 ## Supported by
 
