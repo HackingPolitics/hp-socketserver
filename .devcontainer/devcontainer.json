@@ -1,0 +1,28 @@
+{
+  "name": "HP-Websocket",
+  "dockerFile": "Dockerfile",
+  "workspaceMount": "source=${env:FCP_WORKSPACE_FOLDER},target=/workspaces,type=bind,consistency=delegated",
+  // Specifies a list of ports that should be published.
+  "appPort": [
+    1234
+  ],
+  "containerEnv": {
+    "API_URL": "https://api-dev.hpo.vrok.de",
+    "JWT_KEYFILE": "./public.pem",
+  },
+  // Comment out the next line to run as root instead. Linux users, update
+  // Dockerfile with your user's UID/GID if not 1000.
+  "runArgs": [
+    "-u",
+    "node"
+  ],
+  // Use 'settings' to set *default* container specific settings.json values on container create. 
+  // You can edit these settings after create using File > Preferences > Settings > Remote.
+  "settings": {},
+  // Specifies a command that should be run after the container has been created.
+  "postCreateCommand": "yarn install",
+  "extensions": [
+    "ms-azuretools.vscode-docker",
+    "dbaeumer.vscode-eslint"
+  ]
+}
