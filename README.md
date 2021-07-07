@@ -1,7 +1,7 @@
 # Hacking Politics Websocket
 
 <div style="text-align:center">
-<a href="https://zukunftsstadt.de/hacking-politics"><img src="./public/images/logo.png" style="display:block; margin:auto; width:100%; max-width:100%"/></a>
+<a href="https://zukunftsstadt.de/hacking-politics"><img src="./logo.png" style="display:block; margin:auto; width:100%; max-width:100%"/></a>
 </div>
 
 By
