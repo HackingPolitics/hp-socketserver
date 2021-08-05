@@ -14,7 +14,7 @@ import {
 } from './hocuspocus'
 import Timeout = NodeJS.Timeout
 import { HydraClient } from './HydraClient'
-import { jwtHelper } from './hocuspocus/JwtHelper'
+import { HpoContext, jwtHelper } from './hocuspocus/JwtHelper'
 
 export interface Configuration {
   debounce: number | false | null,
@@ -54,24 +54,46 @@ export class HpBridge implements Extension {
       throw new Error('Connect without token!')
     }
 
-    const requestedProject = Number.parseInt(data.documentName.replace('project-', ''), 10)
-    const context = jwtHelper.verify(token, requestedProject)
+    const dashPos = data.documentName.indexOf('-')
+    if (dashPos <= 0) {
+      throw new Error('Connect with invalid document name')
+    }
 
-    console.debug(`User ${context.user} connected to project ${requestedProject}`)
+    let context: HpoContext
+
+    const type = data.documentName.substring(0, dashPos)
+    const requestedId = Number.parseInt(data.documentName.replace(`${type}-`, ''), 10)
+
+    switch (type) {
+      case 'project':
+      case 'proposal':
+        context = jwtHelper.verify(token, type, requestedId)
+        break
+
+      default:
+        throw new Error(`Unknown type ${type}`)
+    }
+
+    // eslint-disable-next-line no-console
+    console.debug(`User ${context.user} connected to ${type} ${requestedId}`)
 
     // this will be attached to the connection and is available in the onChange hook
     return context
   }
 
   async onCreateDocument(data: onCreateDocumentPayload) {
+    if (data.context.type !== 'proposal') {
+      return
+    }
+
     const response = await this.client.get(
-      `/projects/${data.context.project}/collab`,
+      `/proposals/${data.context.id}/collab`,
       undefined,
       { headers: { Authorization: `Bearer ${data.context.token}` } },
     )
 
     if (!response || !response.collabData) {
-      throw new Error('Could not load project, invalid or empty response received from the backend!')
+      throw new Error('Could not load proposal, invalid or empty response received from the backend!')
     }
 
     Object.keys(response.collabData).forEach(key => {
@@ -81,9 +103,9 @@ export class HpBridge implements Extension {
 
     const syncState: YMap<any> = data.document.getMap('syncState')
     syncState.set('savedAt', 0)
-    syncState.set('formLocked', false)
 
-    console.debug(`Loaded project ${data.context.project} from the backend`)
+    // eslint-disable-next-line no-console
+    console.debug(`Loaded proposal ${data.context.id} from the backend`)
 
     // no need to return a document as we already modified the provided new document
   }
@@ -96,14 +118,22 @@ export class HpBridge implements Extension {
       return
     }
 
+    if (data.context.type !== 'proposal') {
+      return
+    }
+
     // console.debug(`Document ${data.documentName} changed by user ${data.context.user}`)
+
     const save = async () => {
       try {
         await this.client.post(
-          `/projects/${data.context.project}/collab`,
+          `/proposals/${data.context.id}/collab`,
           {
             collabData: {
-              description: TiptapTransformer.fromYdoc(data.document, 'description'),
+              actionMandate: TiptapTransformer.fromYdoc(data.document, 'actionMandate'),
+              comment: TiptapTransformer.fromYdoc(data.document, 'comment'),
+              introduction: TiptapTransformer.fromYdoc(data.document, 'introduction'),
+              reasoning: TiptapTransformer.fromYdoc(data.document, 'reasoning'),
             },
           },
           {
@@ -123,7 +153,8 @@ export class HpBridge implements Extension {
       const syncState = data.document.share.get('syncState') as unknown as YMap<any>
       syncState.set('savedAt', now)
 
-      console.debug(`Changes to project ${data.context.project} pushed to backend @${now}, impersonating user ${data.context.user}`)
+      // eslint-disable-next-line no-console
+      console.debug(`Changes to proposal ${data.context.id} pushed to backend @${now}, impersonating user ${data.context.user}`)
     }
 
     if (!this.configuration.debounce) {

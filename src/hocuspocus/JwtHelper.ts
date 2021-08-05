@@ -8,6 +8,14 @@ export type HpoToken = JwtPayload & {
   roles: string[]
 }
 
+export type HpoContext = {
+  expires?: number
+  id: number
+  user: number
+  token: string
+  type: string
+}
+
 class JwtHelper {
   jwtKey: Buffer
 
@@ -17,28 +25,38 @@ class JwtHelper {
     this.jwtKey = fs.readFileSync(keyFile)
   }
 
-  verify(token: string, projectId = 0) {
+  verify(token: string, type = 'project', id = 0): HpoContext {
     // this will throw an error if verification or decoding failed or the token is expired,
     // dont catch it to let the handler know he should close the connection
     const decoded = jwt.verify(token, this.jwtKey) as HpoToken
 
-    const context = {
-      expires: decoded.exp,
-      project: projectId,
-      token,
-      user: decoded.id,
-    }
+    if (id > 0) {
+      switch (type) {
+        case 'project':
+          if (!decoded.editableProjects.includes(id)) {
+            throw new Error(`Not allowed to access project ${id}`)
+          }
+          break
 
-    if (projectId > 0) {
-      if (!decoded.editableProjects.includes(projectId)) {
-        throw new Error(`Not allowed to access project ${projectId}`)
+        case 'proposal':
+          if (!decoded.editableProposals.includes(id)) {
+            throw new Error(`Not allowed to access proposal ${id}`)
+          }
+          break
+
+        default:
+          throw new Error(`Unknown type ${type}`)
       }
-
-      context.project = projectId
     }
 
     // this will be attached as context to the connection and is available in the onChange hook
-    return context
+    return {
+      expires: decoded.exp,
+      id,
+      token,
+      type,
+      user: decoded.id,
+    }
   }
 }
 
