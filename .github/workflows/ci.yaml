@@ -1,0 +1,43 @@
+on:
+  push:
+
+jobs:
+  docker:
+    name: Push Docker image to Docker Hub
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the repo
+        if: github.event_name != 'pull_request'
+        uses: actions/checkout@v2
+
+      - name: Log in to Docker Hub
+        if: github.event_name != 'pull_request'
+        uses: docker/login-action@v1
+        with:
+          username: ${{ secrets.DOCKER_HUB_USER }}
+          password: ${{ secrets.DOCKER_HUB_TOKEN }}
+
+      - name: Extract metadata (tags, labels) for PHP
+        id: dockermeta
+        if: github.event_name != 'pull_request'
+        uses: docker/metadata-action@v3
+        with:
+          images: jschumanndd/hp-socketserver
+          tags: |
+            type=ref,event=branch
+            type=semver,pattern={{major}}.{{minor}}
+            type=semver,pattern={{major}}
+          flavor: |
+            latest=auto
+
+      - name: Build and push Node image
+        if: github.event_name != 'pull_request'
+        uses: docker/build-push-action@v2
+        with:
+          context: .
+          push: true
+          target: deploy
+          tags: ${{ steps.dockermeta.outputs.tags }}
+          labels: ${{ steps.dockermeta.outputs.labels }}
+          cache-from: type=registry,ref=jschumanndd/hp-socketserver
+          cache-to: type=inline
