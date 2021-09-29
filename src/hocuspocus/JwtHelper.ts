@@ -35,14 +35,14 @@ class JwtHelper {
         case 'project':
           if (!decoded.editableProjects.includes(id)) {
             const allowedIDs = decoded.editableProjects.join(', ')
-            throw new Error(`${decoded.username} not allowed to access project ${id}, allowed: ${allowedIDs}`)
+            throw new Error(`${(new Date()).toISOString}: ${decoded.username} not allowed to access project ${id}, allowed: ${allowedIDs}`)
           }
           break
 
         case 'proposal':
           if (!decoded.editableProposals.includes(id)) {
             const allowedIDs = decoded.editableProposals.join(', ')
-            throw new Error(`${decoded.username} not allowed to access proposal ${id}, allowed: ${allowedIDs}`)
+            throw new Error(`${(new Date()).toISOString}: ${decoded.username} not allowed to access proposal ${id}, allowed: ${allowedIDs}`)
           }
           break
 

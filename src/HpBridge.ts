@@ -51,12 +51,12 @@ export class HpBridge implements Extension {
   async onConnect(data: onConnectPayload) {
     const token = data.requestParameters.get('authToken')
     if (!token) {
-      throw new Error('Connect without token!')
+      throw new Error(`${this.dateString()}: Connect without token!`)
     }
 
     const dashPos = data.documentName.indexOf('-')
     if (dashPos <= 0) {
-      throw new Error('Connect with invalid document name')
+      throw new Error(`${this.dateString()}: Connect with invalid document name`)
     }
 
     let context: HpoContext
@@ -71,11 +71,11 @@ export class HpBridge implements Extension {
         break
 
       default:
-        throw new Error(`Unknown type ${type}`)
+        throw new Error(`${this.dateString()}: Unknown type ${type}`)
     }
 
     // eslint-disable-next-line no-console
-    console.debug(`User ${context.user} connected to ${type} ${requestedId}`)
+    console.debug(`${this.dateString()}: User ${context.user} connected to ${type} ${requestedId}`)
 
     // this will be attached to the connection and is available in the onChange hook
     return context
@@ -105,7 +105,7 @@ export class HpBridge implements Extension {
     syncState.set('savedAt', 0)
 
     // eslint-disable-next-line no-console
-    console.debug(`Loaded proposal ${data.context.id} from the backend`)
+    console.debug(`${this.dateString()}: Loaded proposal ${data.context.id} from the backend`)
 
     // no need to return a document as we already modified the provided new document
   }
@@ -125,6 +125,9 @@ export class HpBridge implements Extension {
     // console.debug(`Document ${data.documentName} changed by user ${data.context.user}`)
 
     const save = async () => {
+      // @todo remove debug
+      console.log(TiptapTransformer.fromYdoc(data.document, 'actionMandate'))
+
       try {
         await this.client.post(
           `/proposals/${data.context.id}/collab`,
@@ -142,7 +145,7 @@ export class HpBridge implements Extension {
         )
       } catch (err) {
         if (err.message) {
-          console.error(`Pushing changes to backend server failed: ${err.message}`)
+          console.error(`${this.dateString()}: Pushing changes to backend server failed: ${err.message}`)
 
           return
         }
@@ -154,7 +157,7 @@ export class HpBridge implements Extension {
       syncState.set('savedAt', now)
 
       // eslint-disable-next-line no-console
-      console.debug(`Changes to proposal ${data.context.id} pushed to backend @${now}, impersonating user ${data.context.user}`)
+      console.debug(`${this.dateString()}: Changes to proposal ${data.context.id} pushed to backend @${now}, impersonating user ${data.context.user}`)
     }
 
     if (!this.configuration.debounce) {
@@ -207,5 +210,9 @@ export class HpBridge implements Extension {
       start,
       timeout: setTimeout(run, <number>this.configuration.debounce),
     })
+  }
+
+  dateString() {
+    return (new Date()).toISOString()
   }
 }
