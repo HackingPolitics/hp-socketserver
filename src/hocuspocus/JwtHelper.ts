@@ -34,13 +34,15 @@ class JwtHelper {
       switch (type) {
         case 'project':
           if (!decoded.editableProjects.includes(id)) {
-            throw new Error(`Not allowed to access project ${id}`)
+            const allowedIDs = decoded.editableProjects.join(', ')
+            throw new Error(`${decoded.username} not allowed to access project ${id}, allowed: ${allowedIDs}`)
           }
           break
 
         case 'proposal':
           if (!decoded.editableProposals.includes(id)) {
-            throw new Error(`Not allowed to access proposal ${id}`)
+            const allowedIDs = decoded.editableProposals.join(', ')
+            throw new Error(`${decoded.username} not allowed to access proposal ${id}, allowed: ${allowedIDs}`)
           }
           break
 
